@@ -1,0 +1,4 @@
+09:00:05 print Good morning!
+09:00:10 create_file log.txt
+09:00:15 list_files .
+09:00:20 print All done!
