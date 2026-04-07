@@ -1,5 +1,5 @@
 # Virtual environment folders to ignore
-my_venv/
+my_env/
 venv/
 
 #Python cache files to ignore
