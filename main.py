@@ -15,11 +15,13 @@ import os
 
 class Task:
     """Represents a single scheduled task."""
-
+            
     def __init__(self, time_str, action, args, done=False):
         """Store the task's time, action, args, and done status."""
-        # TODO: store attributes on self
-        pass
+        self.time_str = time_str
+        self.action = action
+        self.args = args
+        self.done = done
 
     def execute(self):
         """Execute this task's action.
@@ -29,19 +31,42 @@ class Task:
         # TODO: move the execute_action logic here
         # use self.action and self.args
         # set self.done = True after executing
-        pass
+        if self.action == "print":
+            print(self.args)
+
+        elif self.action == "list_tasks":
+            try:
+                    with open(self.args,"r") as file:
+                         for line in file:
+                              print(line.strip())
+            except FileNotFoundError:
+                 print(f"file {self.args} not found.")
+
+        elif self.action == "create_file":
+            with open(self.args, "w") as f:
+                f.write("Default entry")  # create an empty file
+            print(f"Created file: {self.args}")
+
+        else:
+            print(f"Unknown action: {self.action}")
+
+        self.done = True
+        
 
     def is_due(self, current_time):
         """Check if this task should run at the given time.
         Returns True if time matches and task is not done.
         """
         # TODO: compare self.time_str with current_time, check self.done
-        pass
+        if self.time_str <= current_time and not self.done:
+            return True
+        return False
 
     def __str__(self):
         """Nice display: '09:00:05 | print Hello! [DONE]'"""
         # TODO: return a formatted string showing the task
-        pass
+        status = " [DONE]" if self.done else "[PENDING]"
+        return f"Task time: {self.time_str} | Task action: {self.action} Input:{self.args}status: {status}"
 
     def __repr__(self):
         return f"Task('{self.time_str}', '{self.action}', '{self.args}')"
@@ -56,14 +81,32 @@ class Scheduler:
         self.tasks = self._load_tasks()
 
     def _load_tasks(self):
-        """Read the schedule file and return a list of Task objects.
-        Each line format: HH:MM:SS command argument
-        Skip blank lines and handle missing file.
-        """
+        """Load tasks from file."""
         tasks = []
-        # TODO: open self.filename, parse each line
-        # create Task objects instead of dicts
-        # handle FileNotFoundError
+        try:
+            with open(self.filename, "r") as file:
+                for line in file:
+                    line = line.strip()
+
+                    # skip blank lines
+                    if not line:
+                        continue
+
+                    # split the lines
+                    parts = line.split(maxsplit=2)
+                    
+                    # ensure we have at least time and action
+                    if len(parts) < 2:
+                        continue
+
+                    time = parts[0]
+                    action = parts[1]
+                    args = parts[2] if len(parts) == 3 else ""
+
+                    tasks.append(Task(time, action, args))
+        except FileNotFoundError:
+            print(f"Warning: file '{self.filename}' not found.")
+        
         return tasks
 
     def _get_current_time(self):
@@ -77,12 +120,18 @@ class Scheduler:
         # TODO: loop through self.tasks
         # if task.is_due(current_time), call task.execute()
         # return count of executed tasks
+        for task in self.tasks:
+            if task.is_due(self._get_current_time()):
+                task.execute()
         pass
 
     def all_done(self):
         """Return True if every task has been executed."""
         # TODO: check if all tasks are done
-        pass
+        for task in self.tasks:
+            if not task.done:
+                return False
+        return True
 
     def run(self):
         """Main scheduler loop. Check tasks every second."""
